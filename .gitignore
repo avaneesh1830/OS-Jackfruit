@@ -32,3 +32,12 @@ logs/
 *.swp
 *~
 .vscode/
+rootfs-base/
+rootfs-*/
+*.tar.gz
+rootfs-base/
+rootfs-*/
+*.tar.gz
+rootfs-base/
+rootfs-*/
+*.tar.gz

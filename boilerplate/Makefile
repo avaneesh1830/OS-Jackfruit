@@ -1,41 +1,93 @@
-obj-m += monitor.o
+# =============================================================================
+#  Makefile — Multi-Container Runtime
+#
+#  Targets:
+#    make            — build everything (engine + LKM + workloads)
+#    make engine     — user-space binary only
+#    make module     — kernel module (monitor.ko) only
+#    make workloads  — test workload binaries only
+#    make ci         — CI-safe compile check (engine only, no kernel headers)
+#    make clean      — remove all build artefacts
+# =============================================================================
 
-KDIR := /lib/modules/$(shell uname -r)/build
-PWD := $(shell pwd)
-# If you want host-built workload binaries to run directly inside an Alpine
-# rootfs, you can override this with WORKLOAD_LDFLAGS=-static when your
-# toolchain supports it.
-WORKLOAD_LDFLAGS ?= -static
+# --------------------------------------------------------------------------- #
+#  Toolchain                                                                   #
+# --------------------------------------------------------------------------- #
 
-USER_TARGETS := engine memory_hog cpu_hog io_pulse
+CC      := gcc
+CFLAGS  := -Wall -Wextra -O2 -g \
+           -D_GNU_SOURCE \
+           -pthread \
+           -Wno-unused-result
 
-all: $(USER_TARGETS) module
+# Kernel build system
+KDIR    := /lib/modules/$(shell uname -r)/build
+KBUILD  := $(MAKE) -C $(KDIR) M=$(CURDIR)
 
-ci: WORKLOAD_LDFLAGS =
-ci: $(USER_TARGETS)
+# --------------------------------------------------------------------------- #
+#  Source / output names                                                       #
+# --------------------------------------------------------------------------- #
 
-module: monitor.ko
+ENGINE_SRC   := engine.c
+ENGINE_BIN   := engine
 
-engine: engine.c monitor_ioctl.h
-	gcc -O2 -Wall -Wextra -o engine engine.c -lpthread
+WORKLOAD_SRC := cpu_burn.c io_bound.c mem_hog.c
+WORKLOAD_BIN := cpu_burn io_bound mem_hog
 
-memory_hog: memory_hog.c
-	gcc -O2 -Wall $(WORKLOAD_LDFLAGS) -o memory_hog memory_hog.c
+# obj-m tells the kernel Makefile which module to build
+obj-m := monitor.o
 
-cpu_hog: cpu_hog.c
-	gcc -O2 -Wall $(WORKLOAD_LDFLAGS) -o cpu_hog cpu_hog.c
+# --------------------------------------------------------------------------- #
+#  Top-level targets                                                           #
+# --------------------------------------------------------------------------- #
 
-io_pulse: io_pulse.c
-	gcc -O2 -Wall $(WORKLOAD_LDFLAGS) -o io_pulse io_pulse.c
+.PHONY: all engine module workloads ci clean
 
-monitor.ko: monitor.c monitor_ioctl.h
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+all: engine module workloads
+
+# --------------------------------------------------------------------------- #
+#  User-space engine                                                           #
+# --------------------------------------------------------------------------- #
+
+engine: $(ENGINE_SRC) monitor_ioctl.h
+	$(CC) $(CFLAGS) -o $(ENGINE_BIN) $(ENGINE_SRC) -lpthread
+
+# --------------------------------------------------------------------------- #
+#  Kernel module                                                                #
+# --------------------------------------------------------------------------- #
+
+module: monitor_ioctl.h
+	$(KBUILD) modules
+
+# --------------------------------------------------------------------------- #
+#  Workload binaries                                                           #
+# --------------------------------------------------------------------------- #
+
+workloads: $(WORKLOAD_BIN)
+
+cpu_burn: cpu_burn.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+io_bound: io_bound.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+mem_hog: mem_hog.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+# --------------------------------------------------------------------------- #
+#  CI target (GitHub Actions — no kernel headers, no sudo needed)             #
+# --------------------------------------------------------------------------- #
+
+ci: $(ENGINE_SRC) monitor_ioctl.h
+	$(CC) $(CFLAGS) -o $(ENGINE_BIN) $(ENGINE_SRC) -lpthread
+	@echo "CI build OK"
+
+# --------------------------------------------------------------------------- #
+#  Clean                                                                       #
+# --------------------------------------------------------------------------- #
 
 clean:
-	if [ -d "$(KDIR)" ]; then $(MAKE) -C $(KDIR) M=$(PWD) clean; fi
-	rm -f $(USER_TARGETS) *.o *.mod *.mod.c *.symvers *.order
-	rm -f *.log
-	rm -rf logs
-	rm -f /tmp/mini_runtime.sock
-
-.PHONY: all ci module clean
+	rm -f $(ENGINE_BIN) $(WORKLOAD_BIN)
+	$(KBUILD) clean 2>/dev/null || true
+	rm -f *.o *.ko *.mod *.mod.c *.order *.symvers .*.cmd
+	rm -rf .tmp_versions
