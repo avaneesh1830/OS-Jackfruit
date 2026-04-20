@@ -4,8 +4,8 @@
 
 | Name | SRN |
 |------|-----|
-| Avaneesharoor | PES2UG24CS098 |
-| Aum Padia | PES2UG24CS097|
+| Avaneesharoor | [Your SRN] |
+| [Partner Name] | [Partner SRN] |
 
 ---
 
@@ -109,7 +109,7 @@ sudo ./engine start beta ./rootfs-beta /cpu_hog
 sudo ./engine ps
 ```
 
-![SS1 - Multi-container supervision](ss1.png)
+![SS1 - Multi-container supervision](boilerplate/screenshots/ss1.png)
 
 ---
 
@@ -120,7 +120,7 @@ sudo ./engine ps
 sudo ./engine ps
 ```
 
-![SS2 - Metadata tracking](ss2.png)
+![SS2 - Metadata tracking](boilerplate/screenshots/ss2.png)
 
 ---
 
@@ -131,7 +131,7 @@ Log file contents captured through the pipe → bounded buffer → consumer thre
 sudo ./engine logs alpha
 ```
 
-![SS3 - Bounded buffer logging](ss3.png)
+![SS3 - Bounded buffer logging](boilerplate/screenshots/ss3.png)
 
 ---
 
@@ -143,7 +143,7 @@ sudo ./engine logs alpha
 sudo ./engine logs beta
 ```
 
-![SS4 - CLI and IPC](ss4.png)
+![SS4 - CLI and IPC](boilerplate/screenshots/ss4.png)
 
 ---
 
@@ -155,7 +155,7 @@ sudo ./engine start alpha ./rootfs-alpha /memory_hog --soft-mib 20 --hard-mib 20
 sudo dmesg | grep container_monitor
 ```
 
-![SS5 - Soft limit warning](ss5.png)
+![SS5 - Soft limit warning](boilerplate/screenshots/ss5.png)
 
 ---
 
@@ -168,7 +168,7 @@ sudo dmesg | grep container_monitor
 sudo ./engine ps
 ```
 
-![SS6 - Hard limit enforcement](ss6.png)
+![SS6 - Hard limit enforcement](boilerplate/screenshots/ss6.png)
 
 ---
 
@@ -182,7 +182,7 @@ sudo ./engine logs alpha
 sudo ./engine logs beta
 ```
 
-![SS7 - Scheduling experiment](ss7.png)
+![SS7 - Scheduling experiment](boilerplate/screenshots/ss7.png)
 
 ---
 
@@ -195,7 +195,7 @@ sudo ./engine ps
 ps aux | grep defunct | grep -v grep
 ```
 
-![SS8 - Clean teardown](ss8.png)
+![SS8 - Clean teardown](boilerplate/screenshots/ss8.png)
 
 ---
 
