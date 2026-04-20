@@ -4,8 +4,8 @@
 
 | Name | SRN |
 |------|-----|
-| Avaneesharoor | [Your SRN] |
-| [Partner Name] | [Partner SRN] |
+| Avaneesharoor | PES2UG24CS098 |
+| Aum Padia | PES2YG24CS097|
 
 ---
 
