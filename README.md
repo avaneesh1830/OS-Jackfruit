@@ -5,7 +5,7 @@
 | Name | SRN |
 |------|-----|
 | Avaneesharoor | PES2UG24CS098 |
-| Aum Padia | PES2YG24CS097|
+| Aum Padia | PES2UG24CS097|
 
 ---
 
